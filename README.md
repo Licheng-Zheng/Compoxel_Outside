@@ -11,23 +11,38 @@
 ## Overview
 Gravitation influence for N-bodies is an `$O(N^2)$` computation per time step. This is because each body is attracted to every other body. This quickly grows in the compute required. For this reason, for Compoxel, I implemented two separate algorithms, and combined them to make a third hybrid algorithm.
 
-I don't have the GPUs required for the project at home (the simulation was run on T4 GPUs and the rendering was run on 10 T4s in parallel), so I used cloud computing on Modal for everything. Due to the gravity calculation being identical for each entity in the simulation, I did not have to deal with warp divergence (there is no branching if branches aren't created), and thus did not have to deal with a memory layer (for my next project, I will be dealing with a memory layer).
+I don't have the GPUs required for the project at home (the simulation was run on T4 GPUs and the rendering was run on 10 T4s in parallel), so I used cloud computing on Modal for rendering, Colab where possible and Runpod for one part of the display simulation. Due to the gravity calculation being identical for each entity in the simulation, I did not have to deal with warp divergence (there is no branching if branches aren't created), and thus did not have to deal with a memory layer (for my next project, I will be dealing with a memory layer).
 
 ### Sample Rendering
-10 million entities. Originally, I wanted it to be the collision of a spiral galaxy and a cluster galaxy, but the formationof spiral galaxies is not just reliant on gravity, so my engine would not be able to simulate it yet. (That is the next step). This is the collision of two cluster galaxies, each with about 5 million entities. 
+10 million entities. Originally, I wanted it to be the collision of a spiral galaxy and a cluster galaxy, but the formation of spiral galaxies is not just reliant on gravity, so my engine would not be able to simulate it yet. (Requires fluid dynamics which is the next step). This is the collision of two cluster galaxies, each with about 5 million entities. 
+- I had to bring the camera back significantly to fit everything in frame for the entirety of the video, so the collision is not seen in great detail. 
+- To stop me from needing to download large videos into Github, all video files are links to the posted version on youtube. 
+
+Full Render: 
+[<img width="1329" height="762" alt="image" src="https://github.com/user-attachments/assets/bf33d4ed-cb22-4683-a486-3e311352284a" />](https://www.youtube.com/watch?v=eKMynsMQN3g)
+
+
+Per Frame Compute Times: 
+[<img width="1431" height="756" alt="image" src="https://github.com/user-attachments/assets/d7d308d0-9a4d-4ed4-8977-1b5b64870cba" />](https://www.youtube.com/watch?v=AsgClwaiMt4)
 
 ### Sample Side by Side Rendering 
 - 500k entities using all 4 methods. Initial Conditions (IC) are the same. Simulation run on one T4, Rendering run using Blender on 10 T4s concurrently. (Exported as a zip file with 4 .abc (alembic) files, rendered on Modal) 
 
-PUT THE VIDEO IN HERE 
-VIDEO LINKS: 
-MESH = https://youtu.be/TaAkhnfE6QY
-ALL RENDERING = https://youtu.be/hd1ui1vHk0g
-TREE = https://youtu.be/SqGI0A2BPOA
-NAIVE = https://youtu.be/U3uTejKxo_I
-HYBRID = https://youtu.be/-_pIDW-e5PA
+MESH
+[<img width="1657" height="831" alt="image" src="https://github.com/user-attachments/assets/124536bf-03a0-4d6a-9b20-c0c2d44f4f55" />](https://youtu.be/TaAkhnfE6QY)
 
-- I forgot to keep the colors constant for each particle in each frame (it is randomly assigned on each frame), this leads to the color flickering you can see in the hybrid method. 
+TREE
+[<img width="1478" height="818" alt="image" src="https://github.com/user-attachments/assets/728d36b0-f537-456f-8f21-84e97c7770d4" />](https://youtu.be/SqGI0A2BPOA)
+
+NAIVE 
+[<img width="1470" height="813" alt="image" src="https://github.com/user-attachments/assets/cc0eca62-c769-456d-b1ef-b2fa44130372" />](https://youtu.be/U3uTejKxo_I)
+
+HYBRID
+[<img width="1491" height="818" alt="image" src="https://github.com/user-attachments/assets/e4bdfc26-b93a-47a3-ad5c-07f2b65aa438" />](https://youtu.be/-_pIDW-e5PA)
+Overlayed Graphs of time per frame for each method
+[<img width="823" height="832" alt="image" src="https://github.com/user-attachments/assets/02b86e5d-dae9-4462-9305-a3e43717dbb8" />](https://youtu.be/hd1ui1vHk0g)
+
+- The colors are not kept constant for each particle in each frame (it is randomly assigned on each frame), this leads to the color flickering you can see in the hybrid method. 
 
 - Something interesting to notice is the different behaviors of each method. Note that the Naive method is the most accurate, it is essentially what would occur. 
   - The naive render looks pretty stable (none of the particles are ejected from the render (more or less)), this is essentially what we are trying to replicate in the other simulations
@@ -265,6 +280,7 @@ INCLUDE A PICTURE OF THE BLENDER GEOMETRY NODES AND SHADER NODES
   - Currently, it only works with large objects and only the force of gravity is being applied. In order for cooler galaxies (the spiral galaxy, which is what we live in!) to emerge from the simulation, gas and friction also must be implemented
   
 ## Quick Start 
+Will be added soon.
 ```
 Compoxel/
 ├── assets/                   # Images and video renders for the README
