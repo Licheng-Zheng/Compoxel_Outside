@@ -1,0 +1,104 @@
+## Overview
+Gravitation influence for N-bodies is an `$O(N^2)$` computation per time step. This is because each body is attracted to every other body. This quickly grows in the compute required. For this reason, for Compoxel, I implemented two separate algorithms, and combined them to make a third hybrid algorithm.
+
+I don't have the GPUs required for the project at home (the simulation was run on T4 GPUs and the rendering was run on 10 T4s in parallel), so I used cloud computing on Modal for everything. Due to the gravity calculation being identical for each entity in the simulation, I did not have to deal with warp divergence (there is no branching if branches aren't created), and thus did not have to deal with a memory layer (for my next project, I will be dealing with a memory layer).
+
+## Sample Rendering
+10 million entities (the simulation has been created but I still need to render it, it will be here eventually)
+
+## Methods
+### Method 1: The Naive Baseline `$O(N^2)$` 
+This is each item calculating the attraction to every other object and applying its force. Doubling the number of entities would quadruple the number of computations.
+I used this method to calculate the errors of the other three methods.
+This is the most accurate algorithm and is essentially how gravity works physically. However, the time steps in the simulation are discrete whereas it is continuous in the real world.
+
+**Gravitational Softening:** To prevent entities from slingshotting to infinity when they get too close (where the distance `$r$` approaches zero and force approaches infinity), a softening parameter (`$\epsilon^2$`) is injected into the denominator of the force calculation (`$F=G\frac{m_1 m_2}{r^2+\epsilon^2}$`). This mathematically caps the maximum force and maintains simulation stability.
+
+### Method 2: Hierarchical Center of Mass Voxels (Officially called the Tree Method) `$O(N \log N)$` 
+This method is adapted from the CPU implementation of the Barnes Hut hierarchical approach. It is better for very sparse space.
+The environment is broken down into voxels, starting off with L1 (the smallest) and moving up to larger and larger voxels.
+Each larger voxel must be a multiple of the previous voxels size (3 or 4) so that the calculations can occur on it.
+
+When I need to compute the force applied to an entity, I first compute it using the Naive method for nearby entities, then instead of using the Naive method for far things, it calculates the centre of gravity for the voxel and uses that instead. This makes it so that we only need to calculate it for one big chunk instead of many small entities.
+
+We can't use this approximation when it is right next to the entity because gravitational attraction scales/decomposes with respect to distance squared, so we can only use the approximation when it is far enough away. (The approximation is exact when it is an infinite distance away).
+
+When there are too many entities nearby, this method is even worse than naive. There are the same number of computations required as the naive method (if everything is crammed into one little voxel). And, GPU querying structured memory (which is what we have for the tree), is much much slower than GPU querying random memory (which is what the naive baseline is). For this reason, it performs much much worse when there are too many entities.
+
+BOUNDINGBOXIMAGE 
+
+### Method 3: Force Field (Officially called The Particle-Mesh Field) `$O(N \log N)$` 
+
+When it becomes too dense, the GPU will run the naive N squared loops. To prevent this, a force field method is created.
+
+**Density Trigger:** A voxel (it basically has to be an L1 voxel because the other voxels can't become dense) determines if it is dense enough. If it is, it switches over to the force field method.
+
+**Cloud-In-Cell (CIC) Scattering:** In order to factor in the masses of the stars and where they are in their bounding box (we've split up the voxels into smaller boxes at this point), we use a scattering method which takes into account where it is, and spreads out its mass porportionally to each of the corners of the cube. This "combines" everything together and makes the number of entities that need to be computed constant.
+
+**Direct Mesh Calculation:** A force field for each point is computed, and these are used to move the individuals entities.
+
+This method only works well under certain conditions:
+* Stars cannot be too spread out (the voxels cannot be too large), if they are, then there are not enough bounding boxes for it to be accurate, or it will require too much memory to store everything.
+* If there are very few stars in a single voxel, then more computations are required for the process. (it splits it up into 8 different entities that are treated like a star). The spreading process also takes another layer.
+
+### Method 4: Hybrid Method (Force Field Voxels!) `$O(N \log N)$`
+
+This combines methods 2 and 3 together to create an architecture that scales efficiently in all situations. Instead of breaking down under extreme density, the Hybrid method uses a dynamic density heuristic (IS_DENSE). If an L1 voxel detects too many entities, it seamlessly routes those specific GPU warps to the Particle-Mesh (fluid grid) solver. Sparse regions continue to use the Tree method. This prevents the GPU from falling back to `$O(N^2)$` brute-force math and completely eliminates warp divergence in galactic cores.
+
+## Motivation
+
+Originally, this project was meant to be a computational chemistry engine, however, FlameGPU can only work with discrete objects, while electrons are probablistic. While I could have switched to a ball and stick representation and going one step out (so I only look at the classical atoms instead of the quantum electrons), I wanted to see emergent wavefunctions, so this was not the right tool for it. For this reason, I switched to something else that I am very passionate about, which is astronomy, which has much larger classical objects, and also have deterministic rules governing their behavior.
+
+## Hardware Benchmarking & Performance Profiling
+
+All benchmarks were standardized on mid-tier NVIDIA T4 GPUs (via Modal).
+
+### The Scalability Matrix
+
+| Particle Count (N) | Naive (ms) | Tree (ms) | Pure Mesh (ms) | Hybrid TreePM (ms) |
+| :--- | :--- | :--- | :--- | :--- |
+| 10,000 | $$Data$$ | $$Data$$ | $$Data$$ | $$Data$$ |
+| 50,000 | $$Data$$ | $$Data$$ | $$Data$$ | $$Data$$ |
+| 100,000 | $$Data$$ | $$Data$$ | $$Data$$ | $$Data$$ |
+| 500,000 | - 13 Hours | $$Data$$ | $$Data$$ | $$Data$$ |
+| 1,000,000 | DNF (Timeout) | $$Data$$ | $$Data$$ | $$Data$$ |
+
+### Empirical Curve Fitting
+
+Insertcurve fitted per formancefull.pnghere
+
+The curve fitting was performed using scipy. The following time complexities were provided to scipy to fit to, the one with the lowest `$R^2$` value is chosen to be the empirical time complexity of the method: `$O(N)$`, `$O(N^2)$`, `$O(\log N)$`, `$O(N \log N)$`.
+
+Something interesting seen from this graph and the fit curves are the exact `$R^2$` values for each method.
+
+There is no initial set up time for the naive method, and this perfectly fits the curve: the compute time scales flawlessly with the number of entities.
+
+The force field method requires some setup, so it deviates slightly from the curve if compute was the only consideration. The voxel method requires far more time to set up, because it has to break the space down multiple times, resulting in longer setup times. This appears in the graph as a larger deviation from the theoretical curve-which represents the ideal scenario if pure compute was the only factor.
+
+Finally, the hybrid method requires about as much setup as the force field and voxel methods combined. This results in a far larger deviation from the line of best fit (note that `$R^2$` is not linear so the deviation does not scale linearly to time).
+
+## Pipeline Overhead Profiling
+
+Here is a diagram of how the pipeline works from information generation to the final completed render.
+
+```mermaid
+graph TD
+    A[Initialize PyTorch Tensors] --> B[AutoML Hyperparameter Pre-computation]
+    B --> C[Zero-Copy Pointer Mapping to FLAME GPU]
+    C --> D[Start Frame Loop]
+    D --> E[Star to Voxel Hashing]
+    E --> F[Aggregate Center of Mass]
+    F --> G[Check Voxel Density Threshold]
+    G -->|Sparse: Under Threshold| H[Tree Method: Flat MAC Check]
+    H --> I[Apply Individual Star Gravity]
+    G -->|Dense: Over Threshold| J[Particle-Mesh: Cloud-In-Cell Scatter]
+    J --> K[Solve Fluid Grid Potential]
+    K --> L[Gather Interpolated Forces]
+    I --> M[Update Kinematics]
+    L --> M
+    M --> N[Raw Binary Dump to NVMe Storage]
+    N --> O[Loop until Frames Complete]
+    O --> P[Tar Archive Creation]
+    P --> Q[Cloud-to-Cloud Transfer to Modal Volume]
+    Q --> R[Parallel Headless Blender Rendering]
+    R --> S[Completed Render]

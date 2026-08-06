@@ -1,0 +1,2 @@
+Entity_Count,Naive_ms,Tree_ms,Tree_MSE,Tree_P99,Tree_Max,Mesh_ms,Mesh_MSE,Mesh_P99,Mesh_Max,Hybrid_ms,Hybrid_MSE,Hybrid_P99,Hybrid_Max
+5000000,267983.88,DNF,N/A,N/A,N/A,101776.24,97.778549,20.164469,34.696411,DNF,N/A,N/A,N/A
