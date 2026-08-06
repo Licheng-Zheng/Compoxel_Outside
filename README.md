@@ -19,28 +19,35 @@ I don't have the GPUs required for the project at home (the simulation was run o
 - To stop me from needing to download large videos into Github, all video files are links to the posted version on youtube. 
 
 Full Render: 
-[<img width="1329" height="762" alt="image" src="https://github.com/user-attachments/assets/bf33d4ed-cb22-4683-a486-3e311352284a" width="500"/>](https://www.youtube.com/watch?v=eKMynsMQN3g)
 
+<a href="https://www.youtube.com/watch?v=eKMynsMQN3g">
+  <img src="https://github.com/user-attachments/assets/bf33d4ed-cb22-4683-a486-3e311352284a" alt="Compoxel Render" width="500">
+</a>
 
 Per Frame Compute Times: 
-[<img width="1431" height="756" alt="image" src="https://github.com/user-attachments/assets/d7d308d0-9a4d-4ed4-8977-1b5b64870cba" width="500"/>](https://www.youtube.com/watch?v=AsgClwaiMt4)
+
+<a href="https://www.youtube.com/watch?v=AsgClwaiMt4"><img src="https://github.com/user-attachments/assets/d7d308d0-9a4d-4ed4-8977-1b5b64870cba" alt="image" width="500"></a>
 
 ### Sample Side by Side Rendering 
 - 500k entities using all 4 methods. Initial Conditions (IC) are the same. Simulation run on one T4, Rendering run using Blender on 10 T4s concurrently. (Exported as a zip file with 4 .abc (alembic) files, rendered on Modal) 
 
 MESH
-[<img width="1657" height="831" alt="image" src="https://github.com/user-attachments/assets/124536bf-03a0-4d6a-9b20-c0c2d44f4f55" width="500"/>](https://youtu.be/TaAkhnfE6QY)
+
+<a href="https://youtu.be/TaAkhnfE6QY"><img src="https://github.com/user-attachments/assets/124536bf-03a0-4d6a-9b20-c0c2d44f4f55" alt="image" width="500"></a>
 
 TREE
-[<img width="1478" height="818" alt="image" src="https://github.com/user-attachments/assets/728d36b0-f537-456f-8f21-84e97c7770d4" width="500"/>](https://youtu.be/SqGI0A2BPOA)
+
+<a href="https://youtu.be/SqGI0A2BPOA"><img src="https://github.com/user-attachments/assets/728d36b0-f537-456f-8f21-84e97c7770d4" alt="image" width="500"></a>
 
 NAIVE 
-[<img width="1470" height="813" alt="image" src="https://github.com/user-attachments/assets/cc0eca62-c769-456d-b1ef-b2fa44130372" width="500"/>](https://youtu.be/U3uTejKxo_I)
+
+<a href="https://youtu.be/U3uTejKxo_I"><img src="https://github.com/user-attachments/assets/cc0eca62-c769-456d-b1ef-b2fa44130372" alt="image" width="500"></a>
 
 HYBRID
-[<img width="1491" height="818" alt="image" src="https://github.com/user-attachments/assets/e4bdfc26-b93a-47a3-ad5c-07f2b65aa438" width="500"/>](https://youtu.be/-_pIDW-e5PA)
+
+<a href="https://youtu.be/-_pIDW-e5PA"><img src="https://github.com/user-attachments/assets/e4bdfc26-b93a-47a3-ad5c-07f2b65aa438" alt="image" width="500"></a>
 Overlayed Graphs of time per frame for each method
-[<img width="823" height="832" alt="image" src="https://github.com/user-attachments/assets/02b86e5d-dae9-4462-9305-a3e43717dbb8" width="500"/>](https://youtu.be/hd1ui1vHk0g)
+<a href="https://youtu.be/hd1ui1vHk0g"><img src="https://github.com/user-attachments/assets/02b86e5d-dae9-4462-9305-a3e43717dbb8" alt="image" width="500"></a>
 
 - The colors are not kept constant for each particle in each frame (it is randomly assigned on each frame), this leads to the color flickering you can see in the hybrid method. 
 
