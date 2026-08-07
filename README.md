@@ -47,6 +47,7 @@ HYBRID
 
 <a href="https://youtu.be/-_pIDW-e5PA"><img src="https://github.com/user-attachments/assets/e4bdfc26-b93a-47a3-ad5c-07f2b65aa438" alt="image" width="500"></a>
 Overlayed Graphs of time per frame for each method
+
 <a href="https://youtu.be/hd1ui1vHk0g"><img src="https://github.com/user-attachments/assets/02b86e5d-dae9-4462-9305-a3e43717dbb8" alt="image" width="500"></a>
 
 - The colors are not kept constant for each particle in each frame (it is randomly assigned on each frame), this leads to the color flickering you can see in the hybrid method. 
@@ -131,7 +132,6 @@ We can't use this approximation when it is right next to the entity because grav
 
 When there are too many entities nearby, this method is even worse than naive. There are the same number of computations required as the naive method (if everything is crammed into one little voxel). And, GPU querying structured memory (which is what we have for the tree), is much much slower than GPU querying random memory (which is what the naive baseline is). For this reason, it performs much much worse when there are too many entities.
 
-BOUNDINGBOXIMAGE 
 
 ### Method 3: Force Field (Officially called The Particle-Mesh Field) `$O(N \log N)$` 
 
@@ -159,7 +159,8 @@ To ensure accurate figures of per frame generation time, I first generated two f
 
 The GPU requires time to "warm up" because when idling, the PCIe slot (the data transfer mechanism from the CPU to the GPU) throttles to save power and reduce heat (these are called p-states, with P0 being where we're trying to get to, and P12 being where we're starting). It takes time to for the PCIe slot to transfer at a normal speed, two uncounted frames ensure it is at high utilization before benchmarking occurs. 
 Additionally, FlameGPU compiles the code when it runs (JIT compilation), so the first frame is much slower to compile all the code, memory is also allocated on the first frame. 
-- Essentially, I am trying to remove all of the time spent not doing computations from this benchmark. 
+- Essentially, I am trying to remove all of the time spent not doing computations from this benchmark.
+  
 
 
 All benchmarks were standardized on NVIDIA T4 GPUs (using Modal) 
@@ -174,7 +175,8 @@ All benchmarks were standardized on NVIDIA T4 GPUs (using Modal)
 
 ### Empirical Curve Fitting
 
-Insertcurve fitted per formancefull.pnghere
+<img width="2780" height="1780" alt="curve_fitted_performance_full" src="https://github.com/user-attachments/assets/c7216891-d118-4362-95cb-59e6b827524d" />
+
 
 The curve fitting was performed using scipy. The following time complexities were provided to scipy to fit to, the one with the lowest `$R^2$` value is chosen to be the empirical time complexity of the method: `$O(N)$`, `$O(N^2)$`, `$O(\log N)$`, `$O(N \log N)$`.
 
@@ -269,11 +271,15 @@ Credits applied:
 - Geometry nodes used in order to assign meshes to each point in the point cloud 
 - Camera location was selected in order to capture as much of active environment as possible
 
-Note, originally I was using a slower method of rendering, which took much longer, (each frame t
-ook about 2 minutes to set up) AFter switching to Optix rendering, there were large speed improvements. 10 frames takes about 100 seconds to render (including the set up time). I am performing the rendering in batches of 10 to ensure nothing gets lost. 
+Note, originally I was using a slower method of rendering, which took much longer, (each frame took about 2 minutes to set up) After switching to Optix rendering, there were large speed improvements. 10 frames takes about 100 seconds to render (including the set up time). I am performing the rendering in batches of 10 to ensure nothing gets lost. 
 
+Geometry Nodes: This is what creates an icosphere at each point in the simulation. (In the simulation, the stars are treated as point masses) 
 
-INCLUDE A PICTURE OF THE BLENDER GEOMETRY NODES AND SHADER NODES
+<img width="931" height="373" alt="image" src="https://github.com/user-attachments/assets/3bba2e6d-2567-411c-8bff-169e9709adf6" />
+
+Shading Nodes: This is what decides what color each star is going to be. I specifically pushed it more to the blue side so it would result in more red stars (which is more what you would see in real life) 
+
+<img width="739" height="207" alt="image" src="https://github.com/user-attachments/assets/f2473f19-176b-4e7f-a2df-0234ae057d82" />
 
 
 ## Next Step
@@ -290,15 +296,12 @@ INCLUDE A PICTURE OF THE BLENDER GEOMETRY NODES AND SHADER NODES
 Will be added soon.
 ```
 Compoxel/
-├── assets/                   # Images and video renders for the README
-│   ├── bounding_box_viz.png
-│   └── curve_fitted_performance_full.png
 ├── kernels/                     
-│   └── compoxel_v1.cu        # Raw C++ and CUDA kernel logic (Flat MAC, CIC, etc.)
+│   └── compoxel_v1.cu
 ├── models/                      
-│   └── compoxel_builder.py   # PyFlameGPU model setup and C++ JIT injection
-├── benchmark_runner.py       # Modal serverless deployment and execution 
-├── requirements.txt          # Dependencies (modal, scipy, etc.)
-├── README.md                 # The polished documentation
-└── LICENSE                   # Open-source license (e.g., MIT)
+│   └── compoxel_builder.py 
+├── benchmark_runner.py 
+├── requirements.txt
+├── README.md
+└── LICENSE
 ```
