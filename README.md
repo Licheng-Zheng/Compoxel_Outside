@@ -16,7 +16,7 @@ I don't have the GPUs required for the project at home (the simulation was run o
 ### Sample Rendering
 10 million entities. Originally, I wanted it to be the collision of a spiral galaxy and a cluster galaxy, but the formation of spiral galaxies is not just reliant on gravity, so my engine would not be able to simulate it yet. (Requires fluid dynamics which is the next step). This is the collision of two cluster galaxies, each with about 5 million entities. 
 - I had to bring the camera back significantly to fit everything in frame for the entirety of the video, so the collision is not seen in great detail. 
-- To stop me from needing to download large videos into Github, all video files are links to the posted version on youtube. 
+- To stop me from needing to download large videos into Github, all images are links to the video files on youtube.  
 
 Full Render: 
 
