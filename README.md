@@ -9,9 +9,11 @@
 - [Quick Start](#quick-start)
 
 ## Overview
+Compoxel is a gravity simulation engine written in Cuda with FlameGPU and runs completely in GPU VRAM (it uses CPU to write the locations to disk, but the simulation takes place only on GPU). It parallelizes the calculation to allow for millions of objects.
+
 Gravitation influence for N-bodies is an `$O(N^2)$` computation per time step. This is because each body is attracted to every other body. This quickly grows in the compute required. For this reason, for Compoxel, I implemented two separate algorithms, and combined them to make a third hybrid algorithm.
 
-I don't have the GPUs required for the project at home (the simulation was run on T4 GPUs and the rendering was run on 10 T4s in parallel), so I used cloud computing on Modal for rendering, Colab where possible and Runpod for one part of the display simulation. Due to the gravity calculation being identical for each entity in the simulation, I did not have to deal with warp divergence (there is no branching if branches aren't created), and thus did not have to deal with a memory layer (for my next project, I will be dealing with a memory layer).
+I don't have the GPUs required for the project at home (the simulation was run on a A100 GPU on Google Colab for the 500 thousand entity simulation and an RTX 5090 on Runpod for the 10 million entity simulation and the rendering was run on 10 L4s in parallel on Modal), so I used cloud computing on Modal for rendering, Colab where possible and Runpod for one part of the display simulation. Due to the gravity calculation being identical for each entity in the simulation, I did not have to deal with warp divergence (there is no branching if branches aren't created), and thus did not have to deal with a memory layer (for my next project, I will be dealing with a memory layer).
 
 ### Sample Rendering
 10 million entities. Originally, I wanted it to be the collision of a spiral galaxy and a cluster galaxy, but the formation of spiral galaxies is not just reliant on gravity, so my engine would not be able to simulate it yet. (Requires fluid dynamics which is the next step). This is the collision of two cluster galaxies, each with about 5 million entities. 
@@ -218,7 +220,6 @@ During stress testing at 5,000,000 entities, both the Pure Tree and the Hybrid T
 Here is a diagram of how the pipeline works from information generation to the final completed render.
 ```mermaid
 graph TD
-    A[Initialize PyTorch Tensors] --> B[AutoML Hyperparameter Pre-computation]
     B --> C[Zero-Copy Pointer Mapping to FLAME GPU]
     C --> D[Start Frame Loop]
     D --> E[Star to Voxel Hashing]
